@@ -1,0 +1,12 @@
+[Unit]
+Description=Control systemd services through Web or REST API
+Documentation=https://github.com/ogarcia/sysdweb
+After=network.target
+Requires=dbus.socket
+
+[Service]
+ExecStart=/usr/bin/sysdweb
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
