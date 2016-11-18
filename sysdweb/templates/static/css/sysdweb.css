@@ -1,0 +1,18 @@
+/*
+ * sysdweb.css
+ * Copyright (C) 2016 Óscar García Amor
+ *
+ * Distributed under terms of the GNU GPLv3 license.
+ */
+
+.well {
+  background-color: #fff;
+}
+
+.table {
+  margin-bottom: 0
+}
+
+.table > tbody > tr > td {
+  vertical-align: middle;
+}
