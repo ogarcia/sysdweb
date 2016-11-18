@@ -11,6 +11,8 @@ cd sysdweb
 python setup.py install
 ```
 
+Arch Linux users can install sysdweb from [AUR][1].
+
 ## Run
 
 First take a look to `sysdweb.conf` file to configure sysdweb. Is self
@@ -28,3 +30,5 @@ port and address with `-p` and `-l`.
 ```sh
 sysdweb -p 9080 -l 127.0.0.1
 ```
+
+[1]: https://aur.archlinux.org/packages/sysdweb/
