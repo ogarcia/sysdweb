@@ -18,6 +18,9 @@ Arch Linux users can install sysdweb from [AUR][1].
 First take a look to `sysdweb.conf` file to configure sysdweb. Is self
 explanatory.
 
+You can place `sysdweb.conf` in `/etc` for system, in user home
+`~/.config/sysdweb/sysdweb.conf` or in same directory where you run sysdweb.
+
 Once you have configured sysdweb, simply run.
 
 ```
