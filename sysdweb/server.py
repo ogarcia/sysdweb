@@ -63,7 +63,7 @@ def get_main():
         service_status = get_service_action(service, 'status')
         if service_status['status'] == 'not-found':
             cls = 'active'
-        elif service_status['status'] == 'inactive':
+        elif service_status['status'] == 'inactive' or service_status['status'] == 'failed':
             cls = 'danger'
         elif service_status['status'] == 'active':
             cls = 'success'
@@ -71,7 +71,7 @@ def get_main():
             cls = 'warning'
         disabled_start = True if cls == 'active' or cls == 'success' else False
         disabled_stop = True if cls == 'active' or cls == 'danger' else False
-        disabled_restart = True if cls == 'active' else False
+        disabled_restart = True if cls == 'active' or cls == 'danger' else False
         services.append({'class': cls,
             'disabled_start': disabled_start,
             'disabled_stop': disabled_stop,
