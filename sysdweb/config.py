@@ -9,18 +9,24 @@
 import configparser
 import os
 
-def checkConfig():
+def checkConfig(file=None):
     """
     Parse config and discards errors
     """
-    config_files = [ './sysdweb.conf',
-            os.path.join(os.path.expanduser('~'), '.config/sysdweb/sysdweb.conf'),
-            '/etc/sysdweb.conf' ]
+    if file != None:
+        if os.access(file, os.R_OK):
+            config_file = [file]
+        else:
+            raise SystemExit('Cannot read config file \'{}\'.'.format(file))
+    else:
+        config_files = [ './sysdweb.conf',
+                os.path.join(os.path.expanduser('~'), '.config/sysdweb/sysdweb.conf'),
+                '/etc/sysdweb.conf' ]
+        # Try to load one of config locations
+        config_file = [file for file in config_files if os.access(file, os.R_OK)]
+        if config_file == []:
+            raise SystemExit('No config file found.')
 
-    # Try to load one of config locations
-    config_file = [file for file in config_files if os.access(file, os.R_OK)]
-    if config_file == []:
-        raise SystemExit('No config file found.')
     config = configparser.ConfigParser()
     try:
         config.read(config_file[0])

@@ -23,38 +23,32 @@ if template_path == []:
 TEMPLATE_PATH.insert(0, os.path.join(template_path[0], 'views'))
 static_path = os.path.join(template_path[0], 'static')
 
-# Check config
-config = checkConfig()
-
 @route('/api/v1/<service>/<action>')
 def get_service_action(service, action):
     if service in config.sections():
         sdbus = systemdBus(True) if config.get('DEFAULT', 'scope', fallback='system') == 'user' else systemdBus()
         unit = config.get(service, 'unit')
         if action == 'start':
-            sdbus.start_unit(unit)
-            return {action: 'OK'}
+            return {action: 'OK'} if sdbus.start_unit(unit) else {action: 'Fail'}
         elif action == 'stop':
-            sdbus.stop_unit(unit)
-            return {action: 'OK'}
+            return {action: 'OK'} if sdbus.stop_unit(unit) else {action: 'Fail'}
         elif action == 'restart':
-            sdbus.restart_unit(unit)
-            return {action: 'OK'}
+            return {action: 'OK'} if sdbus.restart_unit(unit) else {action: 'Fail'}
         elif action == 'reload':
-            sdbus.reload_unit(unit)
-            return {action: 'OK'}
+            return {action: 'OK'} if sdbus.reload_unit(unit) else {action: 'Fail'}
         elif action == 'reloadorrestart':
-            sdbus.reload_or_restart_unit(unit)
-            return {action: 'OK'}
+            return {action: 'OK'} if sdbus.reload_or_restart_unit(unit) else {action: 'Fail'}
         elif action == 'status':
             if sdbus.get_unit_load_state(unit) != 'not-found':
                 return {action: str(sdbus.get_unit_active_state(unit))}
             else:
                 return {action: 'not-found'}
         else:
-            abort(404, 'Sorry, but cannot perform \'{}\' action.'.format(service))
+            response.status = 400
+            return {'msg': 'Sorry, but cannot perform \'{}\' action.'.format(action)}
     else:
-        abort(404, 'Sorry, but \'{}\' is not defined in config.'.format(service))
+        response.status = 400
+        return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
 
 @route('/')
 def get_main():
@@ -100,3 +94,11 @@ def get_img(file):
 @route('/js/<file>')
 def get_js(file):
     return static_file(file, root=os.path.join(static_path, 'js'))
+
+def start(config_file, host, port):
+    # Check config
+    global config
+    config = checkConfig(config_file)
+
+    # Run webserver
+    run(host=host, port=port)

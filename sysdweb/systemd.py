@@ -6,7 +6,7 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from dbus import SystemBus, SessionBus, Interface
+from dbus import SystemBus, SessionBus, Interface, exceptions
 
 DBUS_INTERFACE = 'org.freedesktop.DBus.Properties'
 SYSTEMD_BUSNAME = 'org.freedesktop.systemd1'
@@ -33,16 +33,36 @@ class systemdBus(object):
         return unit_properties.Get(SYSTEMD_UNIT_INTERFACE, 'LoadState')
 
     def start_unit(self, unit):
-        self.manager.StartUnit(unit, 'replace')
+        try:
+            self.manager.StartUnit(unit, 'replace')
+            return True
+        except exceptions.DBusException:
+            return False
 
     def stop_unit(self, unit):
-        self.manager.StopUnit(unit, 'replace')
+        try:
+            self.manager.StopUnit(unit, 'replace')
+            return True
+        except exceptions.DBusException:
+            return False
 
     def restart_unit(self, unit):
-        self.manager.RestartUnit(unit, 'replace')
+        try:
+            self.manager.RestartUnit(unit, 'replace')
+            return True
+        except exceptions.DBusException:
+            return False
 
     def reload_unit(self, unit):
-        self.manager.ReloadUnit(unit, 'replace')
+        try:
+            self.manager.ReloadUnit(unit, 'replace')
+            return True
+        except exceptions.DBusException:
+            return False
 
     def reload_or_restart_unit(self, unit):
-        self.manager.ReloadOrRestartUnit(unit, 'replace')
+        try:
+            self.manager.ReloadOrRestartUnit(unit, 'replace')
+            return True
+        except exceptions.DBusException:
+            return False

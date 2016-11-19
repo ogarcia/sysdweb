@@ -6,14 +6,15 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from sysdweb.server import run
+from sysdweb.server import start
 
 import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-l', '--listen', metavar='host or ip', default='127.0.0.1', help='listen address, default: 127.0.0.1')
-    parser.add_argument('-p', '--port', metavar='port', default='10080', help='listen port, default: 10080')
+    parser.add_argument('-c', '--config', metavar='value', default=None, help='Custom configuration file path')
+    parser.add_argument('-l', '--listen', metavar='value', default='127.0.0.1', help='listen address (host or ip), default: 127.0.0.1')
+    parser.add_argument('-p', '--port', metavar='value', default='10080', help='listen port, default: 10080')
     args = parser.parse_args()
 
-    run(host=args.listen, port=args.port)
+    start (args.config, args.listen, args.port)
