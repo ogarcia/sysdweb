@@ -12,9 +12,9 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', metavar='value', default=None, help='Custom configuration file path')
-    parser.add_argument('-l', '--listen', metavar='value', default='127.0.0.1', help='listen address (host or ip), default: 127.0.0.1')
-    parser.add_argument('-p', '--port', metavar='value', default='10080', help='listen port, default: 10080')
+    parser.add_argument('-c', '--config', metavar='value', help='Custom configuration file path')
+    parser.add_argument('-l', '--listen', metavar='value', help='listen address (host or ip), default: 127.0.0.1')
+    parser.add_argument('-p', '--port', metavar='value', help='listen port, default: 10080')
     args = parser.parse_args()
 
     start (args.config, args.listen, args.port)

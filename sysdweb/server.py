@@ -100,5 +100,8 @@ def start(config_file, host, port):
     global config
     config = checkConfig(config_file)
 
+    if host == None: host = config.get('DEFAULT', 'host', fallback='127.0.0.1')
+    if port == None: port = config.get('DEFAULT', 'port', fallback='10080')
+
     # Run webserver
     run(host=host, port=port)
