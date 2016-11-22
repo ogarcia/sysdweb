@@ -5,10 +5,6 @@
  * Distributed under terms of the GNU GPLv3 license.
  */
 
-$(document).ready(function(){
-      $('[data-toggle="tooltip"]').tooltip();
-});
-
 function unit(service, action) {
   var url = '/api/v1/' + service + '/' + action;
 
@@ -28,7 +24,10 @@ function unit(service, action) {
 }
 
 $(document).ready(function(){
+  $('[data-toggle="tooltip"]').tooltip();
   setInterval(function() {
-    $('#services').load(document.URL + ' #services');
+    $('#services').load(document.URL + ' #services', function() {
+      $('[data-toggle="tooltip"]').tooltip();
+    });
   }, 20000);
 });

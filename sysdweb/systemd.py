@@ -7,6 +7,7 @@
 # Distributed under terms of the GNU GPLv3 license.
 
 from dbus import SystemBus, SessionBus, Interface, exceptions
+from systemd import journal
 
 DBUS_INTERFACE = 'org.freedesktop.DBus.Properties'
 SYSTEMD_BUSNAME = 'org.freedesktop.systemd1'
@@ -66,3 +67,15 @@ class systemdBus(object):
             return True
         except exceptions.DBusException:
             return False
+
+class Journal(object):
+    def __init__(self, unit):
+        self.reader = journal.Reader()
+        self.reader.add_match(_SYSTEMD_UNIT=unit)
+
+    def get_tail(self, lines):
+        self.reader.seek_tail()
+        self.reader.get_previous(lines)
+        journal_lines = ['{__REALTIME_TIMESTAMP} {MESSAGE}'.format(**value) for value in self.reader]
+        self.reader.close()
+        return journal_lines

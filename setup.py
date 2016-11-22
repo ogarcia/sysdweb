@@ -42,7 +42,8 @@ setup(
     },
     install_requires = [
         "bottle>=0.12.10",
-        "dbus-python>=1.2.4"
+        "dbus-python>=1.2.4",
+        "systemd-python"
     ],
     classifiers=[
         "Development Status :: 3 - Alpha",

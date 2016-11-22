@@ -5,11 +5,20 @@
  * Distributed under terms of the GNU GPLv3 license.
  */
 
-.well {
-  background-color: #fff;
+a {
+  color: rgba(0, 0, 80, 1);
+}
+
+a:hover {
+  color: rgba(0, 0, 80, 0.8);
+  text-decoration: none;
 }
 
 .table {
+  margin-bottom: 0
+}
+
+pre {
   margin-bottom: 0
 }
 
