@@ -8,6 +8,7 @@ git clone https://github.com/ogarcia/sysdweb.git
 virtualenv3 ./sysdweb-venv
 source ./sysdweb-venv/bin/activate
 cd sysdweb
+pip install -r requirements.txt
 python setup.py install
 ```
 

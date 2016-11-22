@@ -30,11 +30,11 @@
         <small>{{hostname or 'sysdweb'}}</small></h1>
       </div>
       <div>
-        <pre id="journal">
+<pre id="journal">
 % for line in journal:
 {{line}}
 % end
-        </pre>
+</pre>
       </div>
     </div>
   </body>
