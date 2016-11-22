@@ -79,10 +79,6 @@ For `status` action, the posible responses are.
 * deactivating
 * not-found (for inexistent unit)
 
-For `journal` action you can pass the number of lines that you want view from
-tail of journal file. By default `/api/v1/<service>/journal` returns 100
-lines.
-
 By default `/api/v1/<service>/journal` returns 100 tail lines of journal
 file of `<service>` unit. You can specify the number of lines by this way.
 
