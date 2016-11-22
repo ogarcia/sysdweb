@@ -64,9 +64,10 @@ The posible `<actions>` are.
 * reload
 * reloadorrestart
 * status
+* journal
 
-All actions (except `status`) return as result `OK` if can communicate with
-DBUS or `Fail` if any error occurs.
+All actions (except `status` and `journal`) return as result `OK` if can
+communicate with DBUS or `Fail` if any error occurs.
 
 For `status` action, the posible responses are.
 
@@ -78,6 +79,17 @@ For `status` action, the posible responses are.
 * deactivating
 * not-found (for inexistent unit)
 
+For `journal` action you can pass the number of lines that you want view from
+tail of journal file. By default `/api/v1/<service>/journal` returns 100
+lines.
+
+By default `/api/v1/<service>/journal` returns 100 tail lines of journal
+file of `<service>` unit. You can specify the number of lines by this way.
+
+```
+/api/v1/<service>/journal/200
+```
+
 In the example defined above all valid enpoins are.
 
 ```
@@ -87,6 +99,8 @@ http://127.0.0.1:10080/api/v1/ngx/restart
 http://127.0.0.1:10080/api/v1/ngx/reload
 http://127.0.0.1:10080/api/v1/ngx/reloadorrestart
 http://127.0.0.1:10080/api/v1/ngx/status
+http://127.0.0.1:10080/api/v1/ngx/journal
+http://127.0.0.1:10080/api/v1/ngx/journal/<number>
 ```
 
 [1]: https://aur.archlinux.org/packages/sysdweb/
