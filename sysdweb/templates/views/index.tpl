@@ -8,10 +8,10 @@
     <title>{{hostname or 'sysdweb'}} · sysdweb</title>
 
     <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom style -->
-    <link href="css/sysdweb.css" rel="stylesheet">
+    <link href="/css/sysdweb.css" rel="stylesheet">
 
     <!-- Favicon -->
     <link rel="shortcut icon" href="/img/favicon.png">
@@ -36,7 +36,16 @@
           </tr>
           % for service in services:
           <tr>
-            <td class="{{service['class']}}">{{service['title']}}</td>
+            <td class="{{service['class']}}">
+            % if service['class'] != 'active':
+              <a href="/journal/{{service['service']}}"
+                data-toggle="tooltip" data-placement="right" title="Show journal">
+            % end
+                {{service['title']}}
+            % if service['class'] != 'active':
+                </a>
+            % end
+            </td>
             <td class="text-right {{service['class']}}">
               <button type="button" class="btn btn-default btn-sm"
               % if service['disabled_start']:
@@ -94,7 +103,7 @@
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/sysdweb.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/sysdweb.js"></script>
   </body>
 </html>

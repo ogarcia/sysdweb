@@ -9,7 +9,7 @@
 from bottle import abort, response, route, run, static_file, template, TEMPLATE_PATH
 from socket import gethostname
 from sysdweb.config import checkConfig
-from sysdweb.systemd import systemdBus
+from sysdweb.systemd import systemdBus, Journal
 
 import json
 import os
@@ -43,9 +43,28 @@ def get_service_action(service, action):
                 return {action: str(sdbus.get_unit_active_state(unit))}
             else:
                 return {action: 'not-found'}
+        elif action == 'journal':
+            return get_service_journal(service, 100)
         else:
             response.status = 400
             return {'msg': 'Sorry, but cannot perform \'{}\' action.'.format(action)}
+    else:
+        response.status = 400
+        return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
+
+@route('/api/v1/<service>/journal/<lines>')
+def get_service_journal(service, lines):
+    if service in config.sections():
+        if get_service_action(service, 'status')['status'] == 'not-found':
+            return {'journal': 'not-found'}
+        try:
+            lines = int(lines)
+        except Exception as e:
+            response.status = 500
+            return {'msg': '{}'.format(e)}
+        unit = config.get(service, 'unit')
+        journal = Journal(unit)
+        return {'journal': journal.get_tail(lines)}
     else:
         response.status = 400
         return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
@@ -73,6 +92,16 @@ def get_main():
             'title': config.get(service, 'title'),
             'service': service})
     return template('index', hostname=gethostname(), services=services)
+
+@route('/journal/<service>')
+def get_service_journal_page(service):
+    if service in config.sections():
+        if get_service_action(service, 'status')['status'] == 'not-found':
+            abort(400,'Sorry, but service \'{}\' unit not found in system.'.format(config.get(service, 'title')))
+        journal_lines = get_service_journal(service, 100)
+        return template('journal', hostname=gethostname(), service=config.get(service, 'title'), journal=journal_lines['journal'])
+    else:
+        abort(400, 'Sorry, but \'{}\' is not defined in config.'.format(service))
 
 # Serve static content
 @route('/favicon.ico')
