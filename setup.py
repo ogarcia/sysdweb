@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name = "sysdweb",
-    version = "0.1",
+    version = "1.0",
     author = "Oscar Garcia Amor",
     author_email = "ogarcia@connectical.com",
     description = ("Control systemd services through Web or REST API"),
