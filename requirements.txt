@@ -1,3 +1,4 @@
 bottle >= 0.12.10
 dbus-python
+python-pam
 systemd-python

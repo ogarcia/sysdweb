@@ -6,12 +6,12 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from bottle import abort, response, route, run, static_file, template, TEMPLATE_PATH
+from bottle import abort, auth_basic, response, route, run, static_file, template, TEMPLATE_PATH
+from pam import pam
 from socket import gethostname
 from sysdweb.config import checkConfig
 from sysdweb.systemd import systemdBus, Journal
 
-import json
 import os
 
 # Search for template path
@@ -23,7 +23,17 @@ if template_path == []:
 TEMPLATE_PATH.insert(0, os.path.join(template_path[0], 'views'))
 static_path = os.path.join(template_path[0], 'static')
 
+# Define auth function
+def login(user, password):
+    users = config.get('DEFAULT', 'users', fallback=None)
+    if users and not user in users.split(','):
+        # User not is in the valid user list
+        return False
+    # Validate user with password
+    return pam().authenticate(user, password)
+
 @route('/api/v1/<service>/<action>')
+@auth_basic(login)
 def get_service_action(service, action):
     if service in config.sections():
         sdbus = systemdBus(True) if config.get('DEFAULT', 'scope', fallback='system') == 'user' else systemdBus()
@@ -53,6 +63,7 @@ def get_service_action(service, action):
         return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
 
 @route('/api/v1/<service>/journal/<lines>')
+@auth_basic(login)
 def get_service_journal(service, lines):
     if service in config.sections():
         if get_service_action(service, 'status')['status'] == 'not-found':
@@ -70,6 +81,7 @@ def get_service_journal(service, lines):
         return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
 
 @route('/')
+@auth_basic(login)
 def get_main():
     services = []
     for service in config.sections():
@@ -94,6 +106,7 @@ def get_main():
     return template('index', hostname=gethostname(), services=services)
 
 @route('/journal/<service>')
+@auth_basic(login)
 def get_service_journal_page(service):
     if service in config.sections():
         if get_service_action(service, 'status')['status'] == 'not-found':
@@ -105,22 +118,27 @@ def get_service_journal_page(service):
 
 # Serve static content
 @route('/favicon.ico')
+@auth_basic(login)
 def get_favicon():
     return static_file('favicon.ico', root=os.path.join(static_path, 'img'))
 
 @route('/css/<file>')
+@auth_basic(login)
 def get_css(file):
     return static_file(file, root=os.path.join(static_path, 'css'))
 
 @route('/fonts/<file>')
+@auth_basic(login)
 def get_fonts(file):
     return static_file(file, root=os.path.join(static_path, 'fonts'))
 
 @route('/img/<file>')
+@auth_basic(login)
 def get_img(file):
     return static_file(file, root=os.path.join(static_path, 'img'))
 
 @route('/js/<file>')
+@auth_basic(login)
 def get_js(file):
     return static_file(file, root=os.path.join(static_path, 'js'))
 
