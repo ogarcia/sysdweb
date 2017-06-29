@@ -29,11 +29,20 @@ sysdweb
 ```
 
 By default sysdweb listen in 10080 port to 127.0.0.1, you can change listen
-port and address with `-p` and `-l`.
+port and address with `-p` and `-l` or via environment variables.
 
 ```sh
 sysdweb -p 9080 -l 0.0.0.0
 ```
+
+Current config environment variables are the following.
+
+| Variable | Description |
+| --- | --- |
+| `SYSDWEB_CONFIG` | Config file location |
+| `SYSDWEB_HOST` | Listen address |
+| `SYSDWEB_PORT` | Listen port |
+| `SYSDWEB_LOGLEVEL` | Log level, effective values are `WARNING`, `INFO` and `DEBUG` |
 
 ## API
 
