@@ -7,12 +7,14 @@
 # Distributed under terms of the GNU GPLv3 license.
 
 import configparser
+import logging
 import os
 
 def checkConfig(file=None):
     """
     Parse config and discards errors
     """
+    logger = logging.getLogger('sysdweb.checkConfig')
     if file != None:
         if os.access(file, os.R_OK):
             config_file = [file]
@@ -26,6 +28,7 @@ def checkConfig(file=None):
         config_file = [file for file in config_files if os.access(file, os.R_OK)]
         if config_file == []:
             raise SystemExit('No config file found.')
+    logger.info('Using config file \'{}\'.'.format(config_file[0]))
 
     config = configparser.ConfigParser()
     try:
@@ -36,17 +39,19 @@ def checkConfig(file=None):
 
     # Read all sections to check if are correctly configurated
     for section in config.sections():
-        if config.get(section, 'title', fallback=None) == None:
+        if not config.get(section, 'title', fallback=None):
             config.remove_section(section)
-            print ('Warning: Removed invalid section without title \'{}\' from config.'.format(section))
+            logger.warning('Removed invalid section without title \'{}\' from config.'.format(section))
         else:
-            if config.get(section, 'unit', fallback=None) == None:
+            if not config.get(section, 'unit', fallback=None):
                 config.remove_section(section)
-                print ('Warning: Removed invalid section without unit \'{}\' from config.'.format(section))
+                logger.warning('Removed invalid section without unit \'{}\' from config.'.format(section))
             else:
                 unit = config.get(section, 'unit')
                 if not '.service' in unit:
-                    config.set(section, 'unit', '{}.service'.format(unit))
+                    unit = '{}.service'.format(unit)
+                    config.set(section, 'unit', unit)
+                logger.debug('Configured section \'{}\' for unit \'{}\''.format(section, unit))
 
     # If after check all sections no valid sections remain, exit with error
     if len(config.sections()) < 1:
