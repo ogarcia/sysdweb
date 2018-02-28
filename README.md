@@ -3,6 +3,8 @@ Control systemd services through Web or REST API
 
 ## Installation
 
+### From source
+
 ```sh
 git clone https://github.com/ogarcia/sysdweb.git
 virtualenv3 ./sysdweb-venv
@@ -11,6 +13,16 @@ cd sysdweb
 pip install -r requirements.txt
 python setup.py install
 ```
+
+### From pypi
+
+```sh
+virtualenv3 ./sysdweb-venv
+source ./sysdweb-venv/bin/activate
+pip install sysdweb
+```
+
+### For Arch Linux users
 
 Arch Linux users can install sysdweb from [AUR][1].
 

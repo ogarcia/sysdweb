@@ -6,7 +6,12 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
+import sysdweb as project
+
 import os
+from pip.download import PipSession
+from pip.req import parse_requirements
+from setuptools import find_packages
 from setuptools import setup
 
 # Utility function to read the README file.
@@ -17,16 +22,19 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
-    name = "sysdweb",
-    version = "1.0",
-    author = "Oscar Garcia Amor",
-    author_email = "ogarcia@connectical.com",
-    description = ("Control systemd services through Web or REST API"),
-    license = "GPLv3",
-    keywords = "systemd web api easy",
-    url = "https://github.com/ogarcia/sysdweb",
-    packages=['sysdweb'],
+    name = project.NAME,
+    version = project.VERSION,
+    author = project.AUTHOR_NAME,
+    author_email = project.AUTHOR_EMAIL,
+    description = project.DESCRIPTION,
+    license = project.LICENSE,
+    keywords = project.KEYWORDS,
+    url = project.URL,
     long_description=read('README.md'),
+    packages=find_packages(),
+    install_requires=[str(x.req) for x in
+                      parse_requirements('requirements.txt',
+                      session=PipSession())],
     package_data={'sysdweb': [
             'templates/static/css/*',
             'templates/static/fonts/*',
@@ -41,9 +49,20 @@ setup(
         ]
     },
     classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Topic :: Utilities",
-        "License :: OSI Approved :: GNU General Public License (GPLv3)",
+        'Development Status :: 5 - Production/Stable',
+        'Environment :: Web Environment',
+        'Framework :: Bottle',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: System Administrators',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Natural Language :: English',
+        'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
+        'Topic :: System',
+        'Topic :: Utilities',
     ],
+    project_urls={
+        'Bug Reports': 'https://github.com/ogarcia/sysdweb/issues',
+        'Source': 'https://github.com/ogarcia/sysdweb',
+    },
 )
