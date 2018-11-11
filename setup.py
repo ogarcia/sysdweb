@@ -9,8 +9,6 @@
 import sysdweb as project
 
 import os
-from pip.download import PipSession
-from pip.req import parse_requirements
 from setuptools import find_packages
 from setuptools import setup
 
@@ -32,9 +30,7 @@ setup(
     url = project.URL,
     long_description=read('README.md'),
     packages=find_packages(),
-    install_requires=[str(x.req) for x in
-                      parse_requirements('requirements.txt',
-                      session=PipSession())],
+    install_requires=read('requirements.txt'),
     package_data={'sysdweb': [
             'templates/static/css/*',
             'templates/static/fonts/*',
