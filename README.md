@@ -3,6 +3,11 @@ Control systemd services through Web or REST API
 
 ## Installation
 
+### Prerequisites
+
+If you are a Ubuntu/Debian user you need to install `libsystemd-dev`, for
+CentOS users the package is `systemd-devel`.
+
 ### From source
 
 ```sh
