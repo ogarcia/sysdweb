@@ -26,14 +26,22 @@ static_path = os.path.join(template_path[0], 'static')
 # Define auth function
 def login(user, password):
     users = config.get('DEFAULT', 'users', fallback=None)
-    if users and not user in users.split(','):
-        # User not is in the valid user list
-        return False
-    # Validate user with password
-    return pam().authenticate(user, password)
+    auth = config.get('DEFAULT', 'auth', fallback=None)
+
+    if auth == 'basic':
+        users = [tuple(user.strip().split(':')) for user in users.split(',')]
+        return True if (user,password) in users else False
+    elif auth == 'pam':
+        if users and not user in users.split(','): return False
+        return pam().authenticate(user, password)
+    return False
+
+def if_auth(condition, decorator):
+    return decorator if condition else lambda x: x
 
 @route('/api/v1/<service>/<action>')
 @auth_basic(login)
+#@if_auth(auth, auth_basic(login))
 def get_service_action(service, action):
     if service in config.sections():
         sdbus = systemdBus(True) if config.get('DEFAULT', 'scope', fallback='system') == 'user' else systemdBus()

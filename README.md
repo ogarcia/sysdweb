@@ -7,6 +7,7 @@ Control systemd services through Web or REST API
 
 If you are a Ubuntu/Debian user you need to install `libsystemd-dev`, for
 CentOS users the package is `systemd-devel`.
+Also on centos you need to install: `systemd-devel glib2-devel dbus-devel python36 python36-virtualenv` and `yum groupinstall development tools`
 
 ### From source
 
