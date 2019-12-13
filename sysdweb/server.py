@@ -6,7 +6,7 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from bottle import abort, auth_basic, response, route, run, static_file, template, TEMPLATE_PATH
+from bottle import abort, auth_basic, request, response, route, run, static_file, template, TEMPLATE_PATH, HTTPError
 from pam import pam
 from socket import gethostname
 from sysdweb.config import checkConfig
@@ -34,14 +34,36 @@ def login(user, password):
     elif auth == 'pam':
         if users and not user in users.split(','): return False
         return pam().authenticate(user, password)
+    elif auth == 'none':
+        return True
+
     return False
 
-def if_auth(condition, decorator):
-    return decorator if condition else lambda x: x
+def if_auth(check, realm="private", text="Access denied"):
+    """ Callback decorator to require HTTP auth (basic).
+        TODO: Add route(check_auth=...) parameter. """
+
+    def decorator(func):
+        def wrapper(*a, **ka):
+            auth = config.get('DEFAULT', 'auth', fallback=None)
+
+            if auth == 'none': return func(*a, **ka)
+
+            user, password = request.auth or (None, None)
+
+            if user is None or not check(user, password):
+                err = HTTPError(401, text)
+                err.add_header('WWW-Authenticate', 'Basic realm="%s"' % realm)
+                return err
+
+            return func(*a, **ka)
+
+        return wrapper
+
+    return decorator
 
 @route('/api/v1/<service>/<action>')
-@auth_basic(login)
-#@if_auth(auth, auth_basic(login))
+@if_auth(login)
 def get_service_action(service, action):
     if service in config.sections():
         sdbus = systemdBus(True) if config.get('DEFAULT', 'scope', fallback='system') == 'user' else systemdBus()
@@ -71,7 +93,7 @@ def get_service_action(service, action):
         return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
 
 @route('/api/v1/<service>/journal/<lines>')
-@auth_basic(login)
+@if_auth(login)
 def get_service_journal(service, lines):
     if service in config.sections():
         if get_service_action(service, 'status')['status'] == 'not-found':
@@ -89,7 +111,7 @@ def get_service_journal(service, lines):
         return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
 
 @route('/')
-@auth_basic(login)
+@if_auth(login)
 def get_main():
     services = []
     for service in config.sections():
@@ -114,7 +136,7 @@ def get_main():
     return template('index', hostname=gethostname(), services=services)
 
 @route('/journal/<service>')
-@auth_basic(login)
+@if_auth(login)
 def get_service_journal_page(service):
     if service in config.sections():
         if get_service_action(service, 'status')['status'] == 'not-found':
@@ -126,27 +148,27 @@ def get_service_journal_page(service):
 
 # Serve static content
 @route('/favicon.ico')
-@auth_basic(login)
+@if_auth(login)
 def get_favicon():
     return static_file('favicon.ico', root=os.path.join(static_path, 'img'))
 
 @route('/css/<file>')
-@auth_basic(login)
+@if_auth(login)
 def get_css(file):
     return static_file(file, root=os.path.join(static_path, 'css'))
 
 @route('/fonts/<file>')
-@auth_basic(login)
+@if_auth(login)
 def get_fonts(file):
     return static_file(file, root=os.path.join(static_path, 'fonts'))
 
 @route('/img/<file>')
-@auth_basic(login)
+@if_auth(login)
 def get_img(file):
     return static_file(file, root=os.path.join(static_path, 'img'))
 
 @route('/js/<file>')
-@auth_basic(login)
+@if_auth(login)
 def get_js(file):
     return static_file(file, root=os.path.join(static_path, 'js'))
 
