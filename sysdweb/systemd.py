@@ -33,6 +33,12 @@ class systemdBus(object):
         unit_properties = Interface(unit_object, DBUS_INTERFACE)
         return unit_properties.Get(SYSTEMD_UNIT_INTERFACE, 'LoadState')
 
+    def get_unit_uptime(self, unit):
+        unit = self.manager.LoadUnit(unit)
+        unit_object = self.bus.get_object(SYSTEMD_BUSNAME, unit)
+        unit_properties = Interface(unit_object, DBUS_INTERFACE)
+        return unit_properties.Get(SYSTEMD_UNIT_INTERFACE, 'ActiveEnterTimestamp')
+
     def start_unit(self, unit):
         try:
             self.manager.StartUnit(unit, 'replace')

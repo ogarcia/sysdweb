@@ -41,7 +41,7 @@
               <a href="/journal/{{service['service']}}"
                 data-toggle="tooltip" data-placement="right" title="Show journal">
             % end
-                {{service['title']}}
+                {{service['title']}} : {{service['uptime']}}
             % if service['class'] != 'active':
                 </a>
             % end

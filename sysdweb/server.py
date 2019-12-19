@@ -11,6 +11,7 @@ from pam import pam
 from socket import gethostname
 from sysdweb.config import checkConfig
 from sysdweb.systemd import systemdBus, Journal
+from datetime import datetime
 
 import os
 
@@ -83,6 +84,13 @@ def get_service_action(service, action):
                 return {action: str(sdbus.get_unit_active_state(unit))}
             else:
                 return {action: 'not-found'}
+        elif action == 'uptime':
+            if sdbus.get_unit_load_state(unit) != 'not-found':
+                unixtime = int(sdbus.get_unit_uptime(unit))
+                uptime_s = datetime.now() - datetime.fromtimestamp(unixtime/1000000)
+                return {action: str(uptime_s)}
+            else:
+                return {action: 'not-found'}
         elif action == 'journal':
             return get_service_journal(service, 100)
         else:
@@ -116,6 +124,8 @@ def get_main():
     services = []
     for service in config.sections():
         service_status = get_service_action(service, 'status')
+        service_uptime = get_service_action(service, 'uptime')
+
         if service_status['status'] == 'not-found':
             cls = 'active'
         elif service_status['status'] == 'inactive' or service_status['status'] == 'failed':
@@ -127,11 +137,13 @@ def get_main():
         disabled_start = True if cls == 'active' or cls == 'success' else False
         disabled_stop = True if cls == 'active' or cls == 'danger' else False
         disabled_restart = True if cls == 'active' or cls == 'danger' else False
+        service_uptime = service_uptime['uptime'] if cls == 'active' or cls == 'success' else '00:00:00'
         services.append({'class': cls,
             'disabled_start': disabled_start,
             'disabled_stop': disabled_stop,
             'disabled_restart': disabled_restart,
             'title': config.get(service, 'title'),
+            'uptime': service_uptime,
             'service': service})
     return template('index', hostname=gethostname(), services=services)
 
