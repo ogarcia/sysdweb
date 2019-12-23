@@ -6,7 +6,7 @@
 # Distributed under terms of the GNU GPLv3 license.
 
 NAME = 'sysdweb'
-VERSION = '1.3.0'
+VERSION = '1.3.1'
 AUTHOR_NAME = 'Óscar García Amor'
 AUTHOR_EMAIL = 'ogarcia@connectical.com'
 DESCRIPTION = 'Control systemd services through Web or REST API'

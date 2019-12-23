@@ -5,6 +5,7 @@ After=network.target
 Requires=dbus.socket
 
 [Service]
+Environment=PYTHONUNBUFFERED=TRUE
 ExecStart=/usr/bin/sysdweb
 Restart=on-failure
 
