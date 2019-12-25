@@ -117,6 +117,7 @@ file of `<service>` unit. You can specify the number of lines by this way.
 In the example defined above all valid enpoins are.
 
 ```
+http://127.0.0.1:10080/api/v1/services
 http://127.0.0.1:10080/api/v1/ngx/start
 http://127.0.0.1:10080/api/v1/ngx/stop
 http://127.0.0.1:10080/api/v1/ngx/restart

@@ -6,14 +6,13 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from bottle import abort, auth_basic, request, response, route, run, static_file, template, TEMPLATE_PATH, HTTPError
+import os
+from bottle import abort, request, response, route, run, static_file, template, TEMPLATE_PATH, HTTPError
 from pam import pam
 from socket import gethostname
+from datetime import datetime
 from sysdweb.config import checkConfig
 from sysdweb.systemd import systemdBus, Journal
-from datetime import datetime
-
-import os
 
 # Search for template path
 template_paths = [ os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates'),
@@ -30,10 +29,10 @@ def login(user, password):
     auth = config.get('DEFAULT', 'auth', fallback=None)
 
     if auth == 'basic':
-        users = [tuple(user.strip().split(':')) for user in users.split(',')]
-        return True if (user,password) in users else False
+        userlist = [tuple(usr.strip().split(':')) for usr in users.split(',')]
+        return True if (user,password) in userlist else False
     elif auth == 'pam':
-        if users and not user in users.split(','): return False
+        if users and user not in users.split(','): return False
         return pam().authenticate(user, password)
     elif auth == 'none':
         return True
@@ -62,6 +61,11 @@ def if_auth(check, realm="private", text="Access denied"):
         return wrapper
 
     return decorator
+
+@route('/api/v1/services')
+@if_auth(login)
+def get_service_list():
+    return {'services': [service for service in config.sections() if service != 'DEFAULT']}
 
 @route('/api/v1/<service>/<action>')
 @if_auth(login)
