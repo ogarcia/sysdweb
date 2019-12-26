@@ -32,6 +32,7 @@
         <table class="table table-hover" id="services">
           <tr>
             <th>Service</th>
+            <th class="text-center">Uptime</th>
             <th class="text-right">Actions</th>
           </tr>
           % for service in services:
@@ -41,11 +42,12 @@
               <a href="/journal/{{service['service']}}"
                 data-toggle="tooltip" data-placement="right" title="Show journal">
             % end
-                {{service['title']}} : {{service['uptime']}}
+                {{service['title']}}
             % if service['class'] != 'active':
                 </a>
             % end
             </td>
+            <td class="text-center {{service['class']}}">{{service['uptime']}}</td>
             <td class="text-right {{service['class']}}">
               <button type="button" class="btn btn-default btn-sm"
               % if service['disabled_start']:
