@@ -44,13 +44,18 @@ def checkConfig(file=None):
         # Get a full list of users
         users = config.get('DEFAULT', 'users', fallback=None)
         groups = config.get('DEFAULT', 'groups', fallback=None)
+        auth = config.get('DEFAULT', 'auth', fallback=None)
+
+        if auth not in ['pam','basic','none']:
+            logger.warning('Used wrong type of auth: \'{}\'. Value can be: pam, basic or none. Setted to pam'.format(auth))
+            config.set('DEFAULT', 'auth', 'pam')
 
         if users:
             users = [user.strip() for user in users.split(',')]
         else:
             users = []
 
-        if groups:
+        if groups and auth == 'pam':
             groups = [group.strip() for group in groups.split(',')]
             # Obtain usenames from groups
             for group in groups:

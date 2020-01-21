@@ -7,6 +7,7 @@ Control systemd services through Web or REST API
 
 If you are a Ubuntu/Debian user you need to install `libsystemd-dev`, for
 CentOS users the package is `systemd-devel`.
+Also on centos you need to install: `systemd-devel glib2-devel dbus-devel python36 python36-virtualenv` and `yum groupinstall development tools`
 
 ### From source
 
@@ -116,6 +117,7 @@ file of `<service>` unit. You can specify the number of lines by this way.
 In the example defined above all valid enpoins are.
 
 ```
+http://127.0.0.1:10080/api/v1/services
 http://127.0.0.1:10080/api/v1/ngx/start
 http://127.0.0.1:10080/api/v1/ngx/stop
 http://127.0.0.1:10080/api/v1/ngx/restart
