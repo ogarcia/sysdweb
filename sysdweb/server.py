@@ -6,31 +6,46 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from bottle import abort, auth_basic, response, route, run, static_file, template, TEMPLATE_PATH
-from pam import pam
+import os
 from socket import gethostname
+from bottle import abort, auth_basic, response, route, hook, run, static_file, template, TEMPLATE_PATH
+from pam import pam
 from sysdweb.config import checkConfig
 from sysdweb.systemd import systemdBus, Journal
 
-import os
 
 # Search for template path
-template_paths = [ os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates'),
-        '/usr/share/sysdweb/templates']
+template_paths = [os.path.join(os.path.abspath(os.path.dirname(__file__)), 'templates'),
+                  '/usr/share/sysdweb/templates']
 template_path = [path for path in template_paths if os.access(path, os.R_OK)]
 if template_path == []:
     raise SystemExit('Templates are missing.')
 TEMPLATE_PATH.insert(0, os.path.join(template_path[0], 'views'))
 static_path = os.path.join(template_path[0], 'static')
 
-# Define auth function
+
 def login(user, password):
+    '''Authenticator function
+    '''
     users = config.get('DEFAULT', 'users', fallback=None)
-    if users and not user in users.split(','):
+    if users and user not in users.split(','):
         # User not is in the valid user list
         return False
     # Validate user with password
     return pam().authenticate(user, password)
+
+
+@hook('after_request')
+def enable_cors():
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'x-api-key, Content-Type, Authorization'
+
+
+@route('/api/v1/<_service>/<_action>', method='OPTIONS')
+def service_options_handler(_service, _action):
+    return {}
+
 
 @route('/api/v1/<service>/<action>')
 @auth_basic(login)
@@ -57,10 +72,11 @@ def get_service_action(service, action):
             return get_service_journal(service, 100)
         else:
             response.status = 400
-            return {'msg': 'Sorry, but cannot perform \'{}\' action.'.format(action)}
+            return {'msg': f'Sorry, but cannot perform \'{action}\' action.'}
     else:
         response.status = 400
-        return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
+        return {'msg': f'Sorry, but \'{service}\' is not defined in config.'}
+
 
 @route('/api/v1/<service>/journal/<lines>')
 @auth_basic(login)
@@ -70,15 +86,16 @@ def get_service_journal(service, lines):
             return {'journal': 'not-found'}
         try:
             lines = int(lines)
-        except Exception as e:
+        except Exception as exc:
             response.status = 500
-            return {'msg': '{}'.format(e)}
+            return {'msg': f'{exc}'}
         unit = config.get(service, 'unit')
         journal = Journal(unit)
         return {'journal': journal.get_tail(lines)}
     else:
         response.status = 400
-        return {'msg': 'Sorry, but \'{}\' is not defined in config.'.format(service)}
+        return {'msg': f'Sorry, but \'{service}\' is not defined in config.'}
+
 
 @route('/')
 @auth_basic(login)
@@ -98,57 +115,75 @@ def get_main():
         disabled_stop = True if cls == 'active' or cls == 'danger' else False
         disabled_restart = True if cls == 'active' or cls == 'danger' else False
         services.append({'class': cls,
-            'disabled_start': disabled_start,
-            'disabled_stop': disabled_stop,
-            'disabled_restart': disabled_restart,
-            'title': config.get(service, 'title'),
-            'service': service})
+                         'disabled_start': disabled_start,
+                         'disabled_stop': disabled_stop,
+                         'disabled_restart': disabled_restart,
+                         'title': config.get(service, 'title'),
+                         'service': service})
     return template('index', hostname=gethostname(), services=services)
+
 
 @route('/journal/<service>')
 @auth_basic(login)
 def get_service_journal_page(service):
     if service in config.sections():
         if get_service_action(service, 'status')['status'] == 'not-found':
-            abort(400,'Sorry, but service \'{}\' unit not found in system.'.format(config.get(service, 'title')))
+            title = config.get(service, 'title')
+            abort(400, f'Sorry, but service \'{title}\' unit not found in system.')
         journal_lines = get_service_journal(service, 100)
-        return template('journal', hostname=gethostname(), service=config.get(service, 'title'), journal=journal_lines['journal'])
+        return template(
+            'journal',
+            hostname=gethostname(),
+            service=config.get(
+                service,
+                'title'),
+            journal=journal_lines['journal'])
     else:
-        abort(400, 'Sorry, but \'{}\' is not defined in config.'.format(service))
+        abort(400, f'Sorry, but \'{service}\' is not defined in config.')
 
-# Serve static content
+
+# Serve static content ---
+
+
 @route('/favicon.ico')
 @auth_basic(login)
 def get_favicon():
     return static_file('favicon.ico', root=os.path.join(static_path, 'img'))
+
 
 @route('/css/<file>')
 @auth_basic(login)
 def get_css(file):
     return static_file(file, root=os.path.join(static_path, 'css'))
 
+
 @route('/fonts/<file>')
 @auth_basic(login)
 def get_fonts(file):
     return static_file(file, root=os.path.join(static_path, 'fonts'))
+
 
 @route('/img/<file>')
 @auth_basic(login)
 def get_img(file):
     return static_file(file, root=os.path.join(static_path, 'img'))
 
+
 @route('/js/<file>')
 @auth_basic(login)
 def get_js(file):
     return static_file(file, root=os.path.join(static_path, 'js'))
+
 
 def start(config_file, host, port):
     # Check config
     global config
     config = checkConfig(config_file)
 
-    if host == None: host = config.get('DEFAULT', 'host', fallback='127.0.0.1')
-    if port == None: port = config.get('DEFAULT', 'port', fallback='10080')
+    if host is None:
+        host = config.get('DEFAULT', 'host', fallback='127.0.0.1')
+    if port is None:
+        port = config.get('DEFAULT', 'port', fallback='10080')
 
     # Run webserver
     run(host=host, port=port)
