@@ -40,9 +40,9 @@ def enable_cors():
     response.headers['Access-Control-Allow-Headers'] = 'x-api-key, Content-Type, Authorization'
 
 
-@route('/api/v1/<_service>/<_action>', method='OPTIONS')
-def service_options_handler(_service, _action):
-    return {}
+@route('/api/v1/<service>/<action>', method='OPTIONS')
+def service_options_handler(**_kwargs):
+    response.status = 204
 
 
 @route('/api/v1/<service>/<action>')
