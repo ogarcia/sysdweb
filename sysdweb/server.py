@@ -37,11 +37,11 @@ def login(user, password):
 def enable_cors():
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'x-api-key, Content-Type, Authorization'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization'
 
 
-@route('/api/v1/<service>/<action>', method='OPTIONS')
-def service_options_handler(**_kwargs):
+@route('/api/<:path>', method='OPTIONS')
+def service_options_handler():
     response.status = 204
 
 
