@@ -41,7 +41,7 @@ def enable_cors():
 
 
 @route('/api/<:path>', method='OPTIONS')
-def service_options_handler():
+def api_options_handler():
     response.status = 204
 
 
