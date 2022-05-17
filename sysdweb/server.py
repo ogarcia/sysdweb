@@ -6,7 +6,7 @@
 #
 # Distributed under terms of the GNU GPLv3 license.
 
-from bottle import abort, auth_basic, response, route, run, static_file, template, TEMPLATE_PATH
+from bottle import abort, auth_basic, response, route, hook, run, static_file, template, TEMPLATE_PATH
 from pam import pam
 from socket import gethostname
 from sysdweb.config import checkConfig
@@ -31,6 +31,19 @@ def login(user, password):
         return False
     # Validate user with password
     return pam().authenticate(user, password)
+
+
+@hook('after_request')
+def enable_cors():
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Authorization'
+
+
+@route('/api/<:path>', method='OPTIONS')
+def api_options_handler():
+    response.status = 204
+
 
 @route('/api/v1/<service>/<action>')
 @auth_basic(login)
