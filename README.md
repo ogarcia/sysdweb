@@ -113,7 +113,7 @@ file of `<service>` unit. You can specify the number of lines by this way.
 /api/v1/<service>/journal/200
 ```
 
-In the example defined above all valid enpoins are.
+In the example defined above all valid endpoints are.
 
 ```
 http://127.0.0.1:10080/api/v1/ngx/start
