@@ -1,33 +1,45 @@
 /*
  * sysdweb.js
- * Copyright (C) 2016-2018 Óscar García Amor <ogarcia@connectical.com>
+ * Copyright (C) 2016-2023 Óscar García Amor <ogarcia@connectical.com>
  *
  * Distributed under terms of the GNU GPLv3 license.
  */
 
-function unit(service, action) {
-  var url = '/api/v1/' + service + '/' + action;
+const warningModal = new bootstrap.Modal('#warningModal', {})
+var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+var tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
-  $.getJSON( url, function( data ) {
-    $.each( data, function( key, val ) {
-      if (val == 'OK') {
-        $('#services').load(document.URL + ' #services');
-        var timerId = setInterval(function(){
-          $('#services').load(document.URL + ' #services');
-        }, 1000);
-        setTimeout(function(){clearInterval(timerId);}, 10000);
-      } else {
-          $('#warningModal').modal('show')
-      }
-    });
+function reload(element) {
+  fetch(document.URL)
+    .then(res => res.text())
+    .then(text => {
+      const parser = new DOMParser();
+      const htmlDocument = parser.parseFromString(text, 'text/html');
+      const section = htmlDocument.documentElement.querySelector(element);
+      document.querySelector(element).replaceWith(section);
+      tooltipList.forEach((tooltip) => {tooltip.dispose()});
+      tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+      tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
   });
 }
 
-$(document).ready(function(){
-  $('[data-toggle="tooltip"]').tooltip();
-  setInterval(function() {
-    $('#services').load(document.URL + ' #services', function() {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-  }, 20000);
-});
+function unit(service, action) {
+  var url = '/api/v1/' + service + '/' + action;
+  fetch(url).then(res => res.json()).then(function (res) {
+    for (key in res) {
+      if (res[key] === 'OK') {
+        reload('#services');
+        var timerId = setInterval(function(){
+          reload('#services');
+        }, 1000);
+        setTimeout(function(){clearInterval(timerId);}, 10000);
+      } else {
+        warningModal.show();
+      }
+    }
+  });
+}
+
+setInterval(function() {
+  reload('#services');
+}, 20000);

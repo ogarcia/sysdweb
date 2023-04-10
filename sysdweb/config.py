@@ -1,8 +1,6 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2016-2018 Óscar García Amor <ogarcia@connectical.com>
+# Copyright © 2016-2023 Óscar García Amor <ogarcia@connectical.com>
 #
 # Distributed under terms of the GNU GPLv3 license.
 
@@ -12,85 +10,89 @@ import logging
 import os
 import pwd
 
-def checkConfig(file=None):
+CONFIG_FILE_NAME = 'sysdweb.conf'
+LOCAL_CONFIG_FILE = os.path.join('.', CONFIG_FILE_NAME)
+SYSTEM_CONFIG_FILE = os.path.join('/etc', CONFIG_FILE_NAME)
+
+logger = logging.getLogger(__name__)
+
+def _get_config_file():
+    xdg_config_home = os.environ.get('XDG_CONFIG_HOME', os.path.join(os.path.expanduser('~'), '.config'))
+    logger.debug(f'XDG_CONFIG_HOME: \'{xdg_config_home}\'.')
+    user_config_file = os.path.join(xdg_config_home, 'sysdweb', CONFIG_FILE_NAME)
+    logger.debug(f'User config file: \'{user_config_file}\'.')
+    for config_file in [LOCAL_CONFIG_FILE, user_config_file, SYSTEM_CONFIG_FILE]:
+        if os.access(config_file, os.R_OK):
+            logger.debug(f'Config file found: \'{config_file}\'.')
+            return config_file
+    raise SystemExit('No config file found.')
+
+def configure(config, config_file=None):
     """
     Parse config and discards errors
     """
-    logger = logging.getLogger('sysdweb.checkConfig')
-    if file != None:
-        if os.access(file, os.R_OK):
-            config_file = [file]
-        else:
-            raise SystemExit('Cannot read config file \'{}\'.'.format(file))
+    if config_file is None:
+        # Try to get one of default config locations
+        config_file = _get_config_file()
     else:
-        config_files = [ './sysdweb.conf',
-                os.path.join(os.path.expanduser('~'), '.config/sysdweb/sysdweb.conf'),
-                '/etc/sysdweb.conf' ]
-        # Try to load one of config locations
-        config_file = [file for file in config_files if os.access(file, os.R_OK)]
-        if config_file == []:
-            raise SystemExit('No config file found.')
-    logger.info('Using config file \'{}\'.'.format(config_file[0]))
+        if not os.access(config_file, os.R_OK):
+            raise SystemExit(f'Cannot read config file \'{config_file}\'.')
+    logger.info(f'Using config file \'{config_file}\'.')
 
-    config = configparser.ConfigParser()
     try:
-        config.read(config_file[0])
-    except Exception as e:
-        err = 'sysdweb config file is corrupted.\n{0}'.format(e)
-        raise SystemExit(err)
+        config.read(config_file)
+    except Exception as err:
+        raise SystemExit(f'sysdweb config file is corrupted.\n{err}')
 
     # Configure valid users
-    if config.get('DEFAULT', 'scope', fallback='system') == 'system':
+    scope = config.get('DEFAULT', 'scope', fallback='system')
+    if scope == 'system':
         # Get a full list of users
         users = config.get('DEFAULT', 'users', fallback=None)
         groups = config.get('DEFAULT', 'groups', fallback=None)
-
-        if users:
-            users = [user.strip() for user in users.split(',')]
-        else:
-            users = []
-
-        if groups:
-            groups = [group.strip() for group in groups.split(',')]
+        users = [] if users is None else list(map(lambda u: u.strip(), users.split(',')))
+        if groups is not None:
+            groups = map(lambda g: g.strip(), groups.split(','))
             # Obtain usenames from groups
             for group in groups:
                 try:
                     users.extend(grp.getgrnam(group)[3])
                 except KeyError:
-                    logger.warning('Group \'{}\' not found in database, skipped.'.format(group))
-
+                    logger.warning(f'Group \'{group}\' not found in database, skipped.')
         # If left any user in list send to main process
-        if users:
+        if users == []:
+            logger.debug('Running in system mode, ALL system users are valid.')
+        else:
             users = list(set(users)) # Remove duplicates
             users.sort() # Sort alphabetically
             logger.debug('Running in system mode, valid users \'{}\'.'.format(', '.join(users)))
             config.set('DEFAULT', 'users', ','.join(users))
-        else:
-            logger.debug('Running in system mode, ALL system users are valid.')
-    else:
+    elif scope == 'user':
         # Only current user can log in
         user = pwd.getpwuid(os.getuid())[0]
-        logger.debug('Running in user mode, valid user \'{}\'.'.format(user))
+        logger.info(f'Running in user mode, valid user \'{user}\'.')
         config.set('DEFAULT', 'users', user)
+    else:
+        raise SystemExit(f'Invalid scope \'{scope}\', must be \'system\' or \'user\'.')
 
     # Read all sections to check if are correctly configurated
     for section in config.sections():
-        if not config.get(section, 'title', fallback=None):
+        if config.get(section, 'title', fallback=None) is None:
             config.remove_section(section)
-            logger.warning('Removed invalid section without title \'{}\' from config.'.format(section))
+            logger.warning(f'Removed invalid section without title \'{section}\' from config.')
         else:
-            if not config.get(section, 'unit', fallback=None):
+            unit = config.get(section, 'unit', fallback=None)
+            if unit is None:
                 config.remove_section(section)
-                logger.warning('Removed invalid section without unit \'{}\' from config.'.format(section))
+                logger.warning(f'Removed invalid section without unit \'{section}\' from config.')
             else:
-                unit = config.get(section, 'unit')
                 if not '.service' in unit:
-                    unit = '{}.service'.format(unit)
+                    unit = f'{unit}.service'
                     config.set(section, 'unit', unit)
-                logger.debug('Configured section \'{}\' for unit \'{}\''.format(section, unit))
+                logger.debug(f'Configured section \'{section}\' for unit \'{unit}\'.')
 
     # If after check all sections no valid sections remain, exit with error
     if len(config.sections()) < 1:
         raise SystemExit('Error in config. No valid sections found.')
 
-    return config
+config = configparser.ConfigParser()

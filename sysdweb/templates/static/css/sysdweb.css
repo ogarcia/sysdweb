@@ -1,23 +1,15 @@
 /*
  * sysdweb.css
- * Copyright (C) 2016-2018 Óscar García Amor
+ * Copyright (C) 2016-2023 Óscar García Amor
  *
  * Distributed under terms of the GNU GPLv3 license.
  */
 
 a {
   color: rgba(0, 0, 80, 1);
+  text-decoration: none;
 }
 
 a:hover {
   color: rgba(0, 0, 80, 0.8);
-  text-decoration: none;
-}
-
-.table {
-  margin-bottom: 0
-}
-
-.table > tbody > tr > td {
-  vertical-align: middle;
 }

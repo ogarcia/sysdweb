@@ -1,8 +1,6 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2016-2018 Óscar García Amor <ogarcia@connectical.com>
+# Copyright © 2016-2023 Óscar García Amor <ogarcia@connectical.com>
 #
 # Distributed under terms of the GNU GPLv3 license.
 
@@ -36,7 +34,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', metavar='value', default=config, help='custom configuration file path')
     parser.add_argument('-l', '--listen', metavar='value', default=host, help='listen address (host or ip), default: 127.0.0.1')
-    parser.add_argument('-p', '--port', metavar='value', default=port, help='listen port, default: 10080')
+    parser.add_argument('-p', '--port', metavar='value', default=port, help='listen port, default: 10088')
     parser.add_argument('-v', '--verbose', action='count', default=0, help='be verbose (add more v to increase verbosity)')
     args = parser.parse_args()
 

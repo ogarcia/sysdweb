@@ -1,8 +1,6 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2016-2018 Óscar García Amor <ogarcia@connectical.com>
+# Copyright © 2016-2023 Óscar García Amor <ogarcia@connectical.com>
 #
 # Distributed under terms of the GNU GPLv3 license.
 
@@ -69,9 +67,10 @@ class systemdBus(object):
             return False
 
 class Journal(object):
-    def __init__(self, unit):
+    def __init__(self, unit, user=False):
         self.reader = journal.Reader()
-        self.reader.add_match(_SYSTEMD_UNIT=unit)
+        match = f'_SYSTEMD_USER_UNIT={unit}' if user else f'_SYSTEMD_UNIT={unit}'
+        self.reader.add_match(match)
 
     def get_tail(self, lines):
         self.reader.seek_tail()

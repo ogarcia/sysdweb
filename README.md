@@ -15,8 +15,7 @@ git clone https://github.com/ogarcia/sysdweb.git
 virtualenv3 ./sysdweb-venv
 source ./sysdweb-venv/bin/activate
 cd sysdweb
-pip install -r requirements.txt
-python setup.py install
+pip install .
 ```
 
 ### From pypi
@@ -45,7 +44,7 @@ Once you have configured sysdweb, simply run.
 sysdweb
 ```
 
-By default sysdweb listen in 10080 port to 127.0.0.1, you can change listen
+By default sysdweb listen in 10088 port to 127.0.0.1, you can change listen
 port and address with `-p` and `-l` or via environment variables.
 
 ```sh
@@ -113,17 +112,17 @@ file of `<service>` unit. You can specify the number of lines by this way.
 /api/v1/<service>/journal/200
 ```
 
-In the example defined above all valid enpoins are.
+In the example defined above all valid endpoints are.
 
 ```
-http://127.0.0.1:10080/api/v1/ngx/start
-http://127.0.0.1:10080/api/v1/ngx/stop
-http://127.0.0.1:10080/api/v1/ngx/restart
-http://127.0.0.1:10080/api/v1/ngx/reload
-http://127.0.0.1:10080/api/v1/ngx/reloadorrestart
-http://127.0.0.1:10080/api/v1/ngx/status
-http://127.0.0.1:10080/api/v1/ngx/journal
-http://127.0.0.1:10080/api/v1/ngx/journal/<number>
+http://127.0.0.1:10088/api/v1/ngx/start
+http://127.0.0.1:10088/api/v1/ngx/stop
+http://127.0.0.1:10088/api/v1/ngx/restart
+http://127.0.0.1:10088/api/v1/ngx/reload
+http://127.0.0.1:10088/api/v1/ngx/reloadorrestart
+http://127.0.0.1:10088/api/v1/ngx/status
+http://127.0.0.1:10088/api/v1/ngx/journal
+http://127.0.0.1:10088/api/v1/ngx/journal/<number>
 ```
 
 [1]: https://aur.archlinux.org/packages/sysdweb/

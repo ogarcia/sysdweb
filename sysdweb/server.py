@@ -1,15 +1,13 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
 # vim:fenc=utf-8
 #
-# Copyright © 2016-2018 Óscar García Amor <ogarcia@connectical.com>
+# Copyright © 2016-2023 Óscar García Amor <ogarcia@connectical.com>
 #
 # Distributed under terms of the GNU GPLv3 license.
 
 from bottle import abort, auth_basic, response, route, hook, run, static_file, template, TEMPLATE_PATH
 from pam import pam
 from socket import gethostname
-from sysdweb.config import checkConfig
+from sysdweb.config import config, configure
 from sysdweb.systemd import systemdBus, Journal
 
 import os
@@ -87,7 +85,7 @@ def get_service_journal(service, lines):
             response.status = 500
             return {'msg': '{}'.format(e)}
         unit = config.get(service, 'unit')
-        journal = Journal(unit)
+        journal = Journal(unit, True) if config.get('DEFAULT', 'scope', fallback='system') == 'user' else Journal(unit)
         return {'journal': journal.get_tail(lines)}
     else:
         response.status = 400
@@ -100,16 +98,16 @@ def get_main():
     for service in config.sections():
         service_status = get_service_action(service, 'status')
         if service_status['status'] == 'not-found':
-            cls = 'active'
+            cls = 'light'
         elif service_status['status'] == 'inactive' or service_status['status'] == 'failed':
             cls = 'danger'
         elif service_status['status'] == 'active':
             cls = 'success'
         else:
             cls = 'warning'
-        disabled_start = True if cls == 'active' or cls == 'success' else False
-        disabled_stop = True if cls == 'active' or cls == 'danger' else False
-        disabled_restart = True if cls == 'active' or cls == 'danger' else False
+        disabled_start = True if cls == 'light' or cls == 'success' else False
+        disabled_stop = True if cls == 'light' or cls == 'danger' else False
+        disabled_restart = True if cls == 'light' or cls == 'danger' else False
         services.append({'class': cls,
             'disabled_start': disabled_start,
             'disabled_stop': disabled_stop,
@@ -140,11 +138,6 @@ def get_favicon():
 def get_css(file):
     return static_file(file, root=os.path.join(static_path, 'css'))
 
-@route('/fonts/<file>')
-@auth_basic(login)
-def get_fonts(file):
-    return static_file(file, root=os.path.join(static_path, 'fonts'))
-
 @route('/img/<file>')
 @auth_basic(login)
 def get_img(file):
@@ -157,11 +150,10 @@ def get_js(file):
 
 def start(config_file, host, port):
     # Check config
-    global config
-    config = checkConfig(config_file)
+    configure(config, config_file)
 
-    if host == None: host = config.get('DEFAULT', 'host', fallback='127.0.0.1')
-    if port == None: port = config.get('DEFAULT', 'port', fallback='10080')
+    if host is None: host = config.get('DEFAULT', 'host', fallback='127.0.0.1')
+    if port is None: port = config.get('DEFAULT', 'port', fallback='10088')
 
     # Run webserver
     run(host=host, port=port)
