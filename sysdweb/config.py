@@ -1,6 +1,6 @@
 # vim:fenc=utf-8
 #
-# Copyright © 2016-2023 Óscar García Amor <ogarcia@connectical.com>
+# Copyright © 2016-2025 Óscar García Amor <ogarcia@connectical.com>
 #
 # Distributed under terms of the GNU GPLv3 license.
 
@@ -86,7 +86,7 @@ def configure(config, config_file=None):
                 config.remove_section(section)
                 logger.warning(f'Removed invalid section without unit \'{section}\' from config.')
             else:
-                if not '.service' in unit:
+                if len(unit.split('.')) < 2:
                     unit = f'{unit}.service'
                     config.set(section, 'unit', unit)
                 logger.debug(f'Configured section \'{section}\' for unit \'{unit}\'.')
